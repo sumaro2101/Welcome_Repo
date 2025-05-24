@@ -7,14 +7,18 @@ from fastapi.responses import RedirectResponse
 from loguru import logger
 
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.exc import IntegrityError
 
 from config import db_connection
 from config import settings
+from api_v1.error_models import CustomErrorModel
 from .schemas import UrlSchema, ViewUrlSchema
 from .dao import RedirectServiseDAO
-from .exceptions import UrlNotFoundError
+from .exceptions import (
+    UrlNotFoundError,
+    UrlAlreadyExistsError,
+    )
 from .common import ErrorCode
-from api_v1.error_models import CustomErrorModel
 
 
 router = APIRouter(
@@ -37,15 +41,40 @@ async def get_list_urls(session: AsyncSession = Depends(db_connection.session_ge
              name='urls:create',
              description='`Create` new short url.',
              response_model=ViewUrlSchema,
+             responses={
+                 status.HTTP_422_UNPROCESSABLE_ENTITY: {
+                     'model': CustomErrorModel,
+                     'content': {
+                         'application/json': {
+                             'examples': {
+                                 ErrorCode.URL_ALREADY_EXISTS_ERROR: {
+                                     'summary': 'Url already exists',
+                                     'value': {
+                                         'status': False,
+                                         'error_code': status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                         'detail': ErrorCode.URL_ALREADY_EXISTS_ERROR,
+                                     }
+                                 }
+                             },
+                         }
+                     }
+                 }
+             },
              status_code=status.HTTP_202_ACCEPTED,
              )
 async def create_short_url(short_url: UrlSchema,
                            session: AsyncSession = Depends(db_connection.session_geter)):
     logger.info(f'POST method get data {short_url}')
-    return await RedirectServiseDAO.add(
-        session=session,
-        url=short_url.url,
-    )
+    try:
+        url = await RedirectServiseDAO.add(
+            session=session,
+            url=short_url.url,
+        )
+    except IntegrityError:
+        raise UrlAlreadyExistsError(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+                                    detail=ErrorCode.URL_ALREADY_EXISTS_ERROR,
+                                    )
+    return url
 
 
 @router.delete(path='/{url_id}',
@@ -67,7 +96,7 @@ async def create_short_url(short_url: UrlSchema,
                                        }
                                    }
                                }
-                           }
+                           },
                        }
                    }
                }

@@ -7,7 +7,10 @@ from http import HTTPStatus
 
 from config.setup_logs.logging import logger
 from api_v1.exeptions import ValidationError
-from api_v1.redirect_servise.exceptions import UrlNotFoundError
+from api_v1.redirect_servise.exceptions import (
+    UrlNotFoundError,
+    UrlAlreadyExistsError,
+)
 
 
 def register_errors(app: FastAPI) -> None:
@@ -68,6 +71,22 @@ def register_errors(app: FastAPI) -> None:
     ):
         """
         Logging all exceptions UrlNotFoundError
+        """
+        logger.opt(exception=True).warning(exc)
+        response = dict(
+            status=False,
+            error_code=exc.status_code,
+            message=exc.detail,
+        )
+        return JSONResponse(response)
+
+    @app.exception_handler(UrlAlreadyExistsError)
+    async def url_exists_error_handler(
+        request: Request,
+        exc: UrlAlreadyExistsError,
+    ):
+        """
+        Logging all exceptions UrlAlreadyExistsError
         """
         logger.opt(exception=True).warning(exc)
         response = dict(
