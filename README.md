@@ -2,7 +2,6 @@
 
 Implement an http service that processes incoming requests. The server starts at <http://127.0.0.1:8080> (the default value can be changed).
 
-<details>
 <summary> List of possible endpoints (can be changed) </summary>
 
 1. Get an abbreviated version of the transmitted URL.
