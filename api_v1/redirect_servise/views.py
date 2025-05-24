@@ -1,4 +1,6 @@
-from fastapi import APIRouter, status, Depends
+from typing import Annotated
+
+from fastapi import APIRouter, status, Depends, Path
 from fastapi_cache.decorator import cache
 from fastapi.responses import RedirectResponse
 
@@ -20,6 +22,7 @@ router = APIRouter(
 
 @router.get(path='',
             name='urls:list',
+            description='Getting `list` of short urls.',
             response_model=list[ViewUrlSchema],
             )
 @cache(expire=settings.MAX_CACHE_EXPIRE)
@@ -29,6 +32,7 @@ async def get_list_urls(session: AsyncSession = Depends(db_connection.session_ge
 
 @router.post(path='',
              name='urls:create',
+             description='`Create` new short url.',
              response_model=ViewUrlSchema,
              status_code=status.HTTP_202_ACCEPTED,
              )
@@ -39,3 +43,25 @@ async def create_short_url(short_url: UrlSchema,
         session=session,
         url=short_url.url,
     )
+
+
+@router.delete(path='/{url_id}',
+               name='urls:delete',
+               description='`Delete` exists short url by `id`.',
+               status_code=status.HTTP_204_NO_CONTENT,
+               )
+async def delete_short_url(url_id: Annotated[int,
+                                             Path(title='Id short url',
+                                                  ge=1,
+                                                  example=23,
+                                                  )],
+                           session: AsyncSession = Depends(db_connection.session_geter),
+                           ):
+    url = await RedirectServiseDAO.find_item_by_args(
+        session=session,
+        id=url_id,
+    )
+    return await RedirectServiseDAO.delete(
+        session=session,
+        instance=url,
+        )
