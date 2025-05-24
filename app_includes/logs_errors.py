@@ -17,7 +17,6 @@ from http import HTTPStatus
 
 from config.setup_logs.logging import logger
 from api_v1.exeptions import ValidationError
-from api_v1.users.exceptions import PasswordNotValidError
 
 
 def register_errors(app: FastAPI) -> None:
@@ -190,22 +189,6 @@ def register_errors(app: FastAPI) -> None:
     ):
         """
         Логирование всех InvalidID
-        """
-        logger.opt(exception=True).warning(exc)
-        response = dict(
-            status=False,
-            error_code=exc.status_code,
-            message=exc.detail,
-        )
-        return JSONResponse(response)
-
-    @app.exception_handler(PasswordNotValidError)
-    async def password_validator_error_handler(
-        request: Request,
-        exc: PasswordNotValidError,
-    ):
-        """
-        Логирование всех PasswordNotValidError
         """
         logger.opt(exception=True).warning(exc)
         response = dict(
