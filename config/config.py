@@ -1,8 +1,7 @@
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 from starlette.config import Config
-from celery.schedules import crontab
 
 
 base_dir = Path(__file__).resolve().parent.parent
@@ -54,41 +53,6 @@ class DBSettings(BaseModel):
     url: str = f'{_engine}://{_owner}:{_password}@{_name}/{_db_name}'
 
 
-class CelerySettings(BaseModel):
-    """
-    Настройки Celery
-    """
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-    )
-    TIMEZONE: str = 'Europe/Moscow'
-    TIMEDELTA_PER_DAY: crontab = crontab(minute=0,
-                                         hour=2,
-                                         day_of_week='*/1',
-                                         day_of_month='*/1',
-                                         month_of_year='*/1',
-                                         )
-    TEST_TIMEDELTA: crontab = crontab(minute='*/1')
-
-
-class RabbitSettings(BaseModel):
-    """
-    Настройки RabbitMQ
-    """
-    RMQ_HOST: str = config('RMQ_HOST')
-    RMQ_PORT: str = config('RMQ_PORT')
-    RMQ_USER: str = config('RABBITMQ_DEFAULT_USER')
-    RMQ_PASSWORD: str = config('RABBITMQ_DEFAULT_PASS')
-    broker_url: str = ('amqp://' +
-                       RMQ_USER +
-                       ':' +
-                       RMQ_PASSWORD +
-                       '@' +
-                       RMQ_HOST +
-                       ':' +
-                       RMQ_PORT)
-
-
 class RedisSettings(BaseModel):
     """
     Настройки Redis
@@ -108,8 +72,6 @@ class Settings(BaseSettings):
     )
     db: DBSettings = DBSettings()
     test_db: TestDBSettings = TestDBSettings()
-    celery: CelerySettings = CelerySettings()
-    rabbit: RabbitSettings = RabbitSettings()
     redis: RedisSettings = RedisSettings()
     alembic: AlembicSettings = AlembicSettings()
     JWT: JWTSettings = JWTSettings()
