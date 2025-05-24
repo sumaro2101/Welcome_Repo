@@ -1,8 +1,7 @@
 from pathlib import Path
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel
 from starlette.config import Config
-from celery.schedules import crontab
 
 
 base_dir = Path(__file__).resolve().parent.parent
@@ -10,16 +9,6 @@ log_dir = base_dir.joinpath('logs')
 
 
 config = Config('.env')
-
-
-class JWTSettings(BaseModel):
-    """
-    Настройки JWT токена
-    """
-    NAME: str = 'jwt'
-    SECRET: str = config('SECRET')
-    RESET_LIFESPAN_TOKEN_SECONDS: int = 3600
-    JWT_PATH: str = '/auth/jwt'
 
 
 class AlembicSettings(BaseModel):
@@ -54,41 +43,6 @@ class DBSettings(BaseModel):
     url: str = f'{_engine}://{_owner}:{_password}@{_name}/{_db_name}'
 
 
-class CelerySettings(BaseModel):
-    """
-    Настройки Celery
-    """
-    model_config = ConfigDict(
-        arbitrary_types_allowed=True,
-    )
-    TIMEZONE: str = 'Europe/Moscow'
-    TIMEDELTA_PER_DAY: crontab = crontab(minute=0,
-                                         hour=2,
-                                         day_of_week='*/1',
-                                         day_of_month='*/1',
-                                         month_of_year='*/1',
-                                         )
-    TEST_TIMEDELTA: crontab = crontab(minute='*/1')
-
-
-class RabbitSettings(BaseModel):
-    """
-    Настройки RabbitMQ
-    """
-    RMQ_HOST: str = config('RMQ_HOST')
-    RMQ_PORT: str = config('RMQ_PORT')
-    RMQ_USER: str = config('RABBITMQ_DEFAULT_USER')
-    RMQ_PASSWORD: str = config('RABBITMQ_DEFAULT_PASS')
-    broker_url: str = ('amqp://' +
-                       RMQ_USER +
-                       ':' +
-                       RMQ_PASSWORD +
-                       '@' +
-                       RMQ_HOST +
-                       ':' +
-                       RMQ_PORT)
-
-
 class RedisSettings(BaseModel):
     """
     Настройки Redis
@@ -97,6 +51,13 @@ class RedisSettings(BaseModel):
     REDIS_PORT: str = config('REDIS_PORT')
     redis_url: str = ('redis://' +
                       REDIS_HOST)
+
+
+class Regex(BaseModel):
+    """
+    Settings for regular
+    """
+    URL_VALIDATION: str = r"^\/[\/\.a-zA-Z0-9\-?&='\"]+$"
 
 
 class Settings(BaseSettings):
@@ -108,12 +69,11 @@ class Settings(BaseSettings):
     )
     db: DBSettings = DBSettings()
     test_db: TestDBSettings = TestDBSettings()
-    celery: CelerySettings = CelerySettings()
-    rabbit: RabbitSettings = RabbitSettings()
     redis: RedisSettings = RedisSettings()
     alembic: AlembicSettings = AlembicSettings()
-    JWT: JWTSettings = JWTSettings()
+    regex: Regex = Regex()
     debug: bool = bool(int(config('DEBUG')))
+    MAX_CACHE_EXPIRE: int = 60
     API_PREFIX: str = '/api/v1'
     BASE_DIR: Path = base_dir
     LOG_DIR: Path = log_dir
