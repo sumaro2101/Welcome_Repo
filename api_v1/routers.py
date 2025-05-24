@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 
 from config import settings
-from api_v1.users.views import router as users
-from api_v1.auth.views import router as auth
+from api_v1.redirect_servise.views import router as redirect_servise
 
 
 def register_routers(app: FastAPI) -> None:
@@ -37,11 +36,6 @@ def register_routers(app: FastAPI) -> None:
     ```
     """
     app.include_router(
-        router=users,
-        prefix=settings.API_PREFIX,
-        )
-
-    app.include_router(
-        router=auth,
+        router=redirect_servise,
         prefix=settings.API_PREFIX,
         )
