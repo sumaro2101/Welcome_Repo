@@ -28,6 +28,9 @@ Need to fill **.env.sample** and after rename him to **.env**
 # .env.sample
 POSTGRES_PASSWORD=password # Password Data Base (Settings)
 DB_PASSWORD=password # Password Data Base (Use)
+
+TEST_POSTGRES_PASSWORD=testpassword # Password Test Data Base (Settings)
+TEST_DB_PASSWORD=testpassword # Password Test Data Base (Use)
 ```
 
 ### Docker
