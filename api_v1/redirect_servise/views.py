@@ -12,6 +12,9 @@ from config import db_connection
 from config import settings
 from .schemas import UrlSchema, ViewUrlSchema
 from .dao import RedirectServiseDAO
+from .exceptions import UrlNotFoundError
+from .common import ErrorCode
+from api_v1.error_models import CustomErrorModel
 
 
 router = APIRouter(
@@ -49,6 +52,25 @@ async def create_short_url(short_url: UrlSchema,
                name='urls:delete',
                description='`Delete` exists short url by `id`.',
                status_code=status.HTTP_204_NO_CONTENT,
+               responses={
+                   status.HTTP_404_NOT_FOUND: {
+                       'model': CustomErrorModel,
+                       'content': {
+                           'application/json': {
+                               'examples': {
+                                   ErrorCode.URL_NOT_FOUND_ERROR: {
+                                       'summary': 'Url with this `id` not `contains` in `Data Base`',
+                                       'value': {
+                                           'status': False,
+                                           'error_code': status.HTTP_404_NOT_FOUND,
+                                           'detail': ErrorCode.URL_NOT_FOUND_ERROR,
+                                       }
+                                   }
+                               }
+                           }
+                       }
+                   }
+               }
                )
 async def delete_short_url(url_id: Annotated[int,
                                              Path(title='Id short url',
@@ -61,6 +83,10 @@ async def delete_short_url(url_id: Annotated[int,
         session=session,
         id=url_id,
     )
+    if not url:
+        raise UrlNotFoundError(status_code=status.HTTP_404_NOT_FOUND,
+                               detail=ErrorCode.URL_NOT_FOUND_ERROR,
+                               )
     return await RedirectServiseDAO.delete(
         session=session,
         instance=url,
