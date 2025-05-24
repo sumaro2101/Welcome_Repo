@@ -38,3 +38,27 @@ async def test_script_url(client: AsyncClient, url_sctipt_data):
         json=url_sctipt_data,
     )
     assert response.status_code == 422
+
+
+@pytest.mark.asyncio
+async def test_redirect(client: AsyncClient):
+    response = await client.get(
+        'urls',
+        )
+    id_path = response.json()[0]['id']
+    response = await client.get(
+        f'urls/{id_path}',
+        )
+    assert response.status_code == 307
+
+
+@pytest.mark.asyncio
+async def test_delete_url(client: AsyncClient):
+    response = await client.get(
+        'urls',
+        )
+    id_path = response.json()[0]['id']
+    response = await client.delete(
+        f'urls/{id_path}',
+        )
+    assert response.status_code == 204
