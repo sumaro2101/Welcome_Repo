@@ -1,4 +1,3 @@
-import asyncio
 import httpx
 import pytest_asyncio
 import pytest
@@ -10,7 +9,6 @@ from sqlalchemy.pool import NullPool
 
 from config import test_connection, settings, db_connection
 from config.models.base import Base
-from api_v1.routers import register_routers
 from main import app
 
 
@@ -18,13 +16,6 @@ db_setup = test_connection(
     settings.test_db.url,
     poolclass=NullPool,
 )
-
-
-# @pytest.fixture(scope='session', autouse=True)
-# def event_loop(request):
-#     loop = asyncio.get_event_loop_policy().new_event_loop()
-#     yield loop
-#     loop.close()
 
 
 async def override_get_async_session():
