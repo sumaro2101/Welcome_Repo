@@ -8,4 +8,7 @@ class RedirectURL(Base):
     """
     Model RedirectUrl
     """
-    url: Mapped[str] = mapped_column(String(256))
+    url: Mapped[str] = mapped_column(String(256),
+                                     unique=True,
+                                     doc='Short url path.',
+                                     )
