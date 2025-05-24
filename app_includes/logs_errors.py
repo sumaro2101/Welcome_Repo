@@ -78,7 +78,7 @@ def register_errors(app: FastAPI) -> None:
             error_code=exc.status_code,
             message=exc.detail,
         )
-        return JSONResponse(response)
+        return JSONResponse(response, status_code=exc.status_code)
 
     @app.exception_handler(UrlAlreadyExistsError)
     async def url_exists_error_handler(
@@ -94,7 +94,7 @@ def register_errors(app: FastAPI) -> None:
             error_code=exc.status_code,
             message=exc.detail,
         )
-        return JSONResponse(response)
+        return JSONResponse(response, status_code=exc.status_code)
 
     @app.exception_handler(ValidationError)
     async def validation_error_handler(
@@ -110,7 +110,7 @@ def register_errors(app: FastAPI) -> None:
             error_code=exc.status_code,
             message=exc.detail,
         )
-        return JSONResponse(response)
+        return JSONResponse(response, status_code=exc.status_code)
 
     @app.exception_handler(HTTPException)
     async def http_error_handler(
@@ -126,7 +126,7 @@ def register_errors(app: FastAPI) -> None:
             error_code=exc.status_code,
             message=exc.detail,
         )
-        return JSONResponse(response)
+        return JSONResponse(response, status_code=exc.status_code)
 
     @app.exception_handler(Exception)
     async def error_handler(
@@ -142,7 +142,7 @@ def register_errors(app: FastAPI) -> None:
             error_code=500,
             message=HTTPStatus(500).phrase,
         )
-        return JSONResponse(response)
+        return JSONResponse(response, status_code=500)
 
     @app.exception_handler(StarletteHTTPException)
     async def validation_starlette_error_handler(
@@ -158,4 +158,4 @@ def register_errors(app: FastAPI) -> None:
             error_code=exc.status_code,
             message=exc.detail,
         )
-        return JSONResponse(response)
+        return JSONResponse(response, status_code=exc.status_code)
