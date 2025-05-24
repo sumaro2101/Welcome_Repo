@@ -77,6 +77,50 @@ async def create_short_url(short_url: UrlSchema,
     return url
 
 
+@router.get(path='/{url_id}',
+            name='urls:get',
+            description='`Get` and `Redirect Temporary` from short `url`.',
+            status_code=status.HTTP_307_TEMPORARY_REDIRECT,
+            responses={
+                status.HTTP_404_NOT_FOUND: {
+                    'model': CustomErrorModel,
+                    'content': {
+                        'application/json': {
+                            'examples': {
+                                ErrorCode.URL_NOT_FOUND_ERROR: {
+                                    'summary': 'Url with this `id` not `contains` in `Data Base`',
+                                    'value': {
+                                        'status': False,
+                                        'error_code': status.HTTP_404_NOT_FOUND,
+                                        'detail': ErrorCode.URL_NOT_FOUND_ERROR,
+                                        }
+                                    }
+                                }
+                            },
+                        }
+                    }
+                },
+            response_class=RedirectResponse,
+            )
+@cache(expire=settings.MAX_CACHE_EXPIRE)
+async def get_and_redirect_url(url_id: Annotated[int,
+                                                 Path(title='Id short url',
+                                                      ge=1,
+                                                      example=23,
+                                                      )],
+                               session: AsyncSession = Depends(db_connection.session_geter),
+                               ):
+    url = await RedirectServiseDAO.find_item_by_args(
+        session=session,
+        id=url_id,
+    )
+    if not url:
+        raise UrlNotFoundError(status_code=status.HTTP_404_NOT_FOUND,
+                               detail=ErrorCode.URL_NOT_FOUND_ERROR,
+                               )
+    return url.url
+
+
 @router.delete(path='/{url_id}',
                name='urls:delete',
                description='`Delete` exists short url by `id`.',
@@ -99,7 +143,7 @@ async def create_short_url(short_url: UrlSchema,
                            },
                        }
                    }
-               }
+               },
                )
 async def delete_short_url(url_id: Annotated[int,
                                              Path(title='Id short url',
