@@ -60,7 +60,7 @@ async def get_list_urls(session: AsyncSession = Depends(db_connection.session_ge
                      }
                  }
              },
-             status_code=status.HTTP_202_ACCEPTED,
+             status_code=status.HTTP_201_CREATED,
              )
 async def create_short_url(short_url: UrlSchema,
                            session: AsyncSession = Depends(db_connection.session_geter)):
@@ -106,7 +106,7 @@ async def create_short_url(short_url: UrlSchema,
 async def get_and_redirect_url(url_id: Annotated[int,
                                                  Path(title='Id short url',
                                                       ge=1,
-                                                      example=23,
+                                                      examples=[23],
                                                       )],
                                session: AsyncSession = Depends(db_connection.session_geter),
                                ):
@@ -148,7 +148,7 @@ async def get_and_redirect_url(url_id: Annotated[int,
 async def delete_short_url(url_id: Annotated[int,
                                              Path(title='Id short url',
                                                   ge=1,
-                                                  example=23,
+                                                  examples=[23],
                                                   )],
                            session: AsyncSession = Depends(db_connection.session_geter),
                            ):
