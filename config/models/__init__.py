@@ -1,4 +1,4 @@
-from .user import User
+from .urls import RedirectURL
 
 
-__all__ = ('User',)
+__all__ = ('RedirectURL',)

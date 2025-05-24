@@ -11,16 +11,6 @@ log_dir = base_dir.joinpath('logs')
 config = Config('.env')
 
 
-class JWTSettings(BaseModel):
-    """
-    Настройки JWT токена
-    """
-    NAME: str = 'jwt'
-    SECRET: str = config('SECRET')
-    RESET_LIFESPAN_TOKEN_SECONDS: int = 3600
-    JWT_PATH: str = '/auth/jwt'
-
-
 class AlembicSettings(BaseModel):
     """
     Настройки Alembic
@@ -63,6 +53,13 @@ class RedisSettings(BaseModel):
                       REDIS_HOST)
 
 
+class Regex(BaseModel):
+    """
+    Settings for regular
+    """
+    URL_VALIDATION: str = r"^\/[\/\.a-zA-Z0-9\-?&='\"]+$"
+
+
 class Settings(BaseSettings):
     """
     Настройки проекта
@@ -74,8 +71,9 @@ class Settings(BaseSettings):
     test_db: TestDBSettings = TestDBSettings()
     redis: RedisSettings = RedisSettings()
     alembic: AlembicSettings = AlembicSettings()
-    JWT: JWTSettings = JWTSettings()
+    regex: Regex = Regex()
     debug: bool = bool(int(config('DEBUG')))
+    MAX_CACHE_EXPIRE: int = 60
     API_PREFIX: str = '/api/v1'
     BASE_DIR: Path = base_dir
     LOG_DIR: Path = log_dir
